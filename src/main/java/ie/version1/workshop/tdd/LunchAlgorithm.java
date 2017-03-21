@@ -1,4 +1,4 @@
-package main.java;
+package ie.version1.workshop.tdd;
 import java.util.ArrayList;
 import java.util.List;
 

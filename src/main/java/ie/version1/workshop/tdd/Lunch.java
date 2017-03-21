@@ -1,4 +1,4 @@
-package main.java;
+package ie.version1.workshop.tdd;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

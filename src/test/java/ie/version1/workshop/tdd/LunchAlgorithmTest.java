@@ -1,4 +1,4 @@
-package test.java;
+package ie.version1.workshop.tdd;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -6,9 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.List;
 
 import org.junit.Test;
-
-import main.java.Lunch;
-import main.java.LunchAlgorithm;
 
 public class LunchAlgorithmTest {
 

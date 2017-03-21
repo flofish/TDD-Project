@@ -24,6 +24,15 @@ public class LunchAlgorithmTest {
 	}
 
 	@Test
+	public void getLunches_tableNotNull() {
+		List<Lunch> lunchList = objectUnderTest.getLunches();
+		assertFalse(lunchList.isEmpty());
+		for(Lunch lunch:lunchList){
+			assertNotNull(lunch.getTables());
+		}
+	}
+	
+	@Test
 	public void getLunches_tableNotEmpty() {
 		List<Lunch> lunchList = objectUnderTest.getLunches();
 		assertFalse(lunchList.isEmpty());

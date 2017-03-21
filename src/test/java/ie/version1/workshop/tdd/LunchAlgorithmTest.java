@@ -3,14 +3,38 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class LunchAlgorithmTest {
 
-	LunchAlgorithm objectUnderTest = new LunchAlgorithm();
+	private List<Leader> leaders;
+	private List<Member> members;
+	private LunchAlgorithm objectUnderTest;
 
+	@Before
+	public void setup() {
+		leaders = new ArrayList<>();
+		leaders.add(new Leader());
+		leaders.add(new Leader());
+		leaders.add(new Leader());
+		leaders.add(new Leader());
+		members = new ArrayList<>();
+		members.add(new Member());
+		members.add(new Member());
+		members.add(new Member());
+		members.add(new Member());
+		members.add(new Member());
+		members.add(new Member());
+		members.add(new Member());
+		members.add(new Member());
+		objectUnderTest = new LunchAlgorithm(leaders, members);
+	}
+	
 	@Test
 	public void getLunches_listNotNull() {
 

@@ -16,7 +16,10 @@ public class LunchAlgorithm {
 	public List<Lunch> getLunches() {
 		List<Lunch> lunchList = new ArrayList<Lunch>();
 		Lunch lunch = new Lunch();
-		Leader leader = new Leader();
+		for(Leader leader:leaders){
+			List<Member> members = null;
+			lunch.getTables().put(leader, members);
+		}
 		lunchList.add(lunch);
 		return lunchList;
 	}

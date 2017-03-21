@@ -25,11 +25,11 @@ public class LunchAlgorithmTest {
 
 	@Test
 	public void getLunches_tableNotEmpty() {
-
 		List<Lunch> lunchList = objectUnderTest.getLunches();
-
 		assertFalse(lunchList.isEmpty());
-		assertNotNull(lunchList.get(0));
+		for(Lunch lunch:lunchList){
+			assertFalse(lunch.getTables().isEmpty());
+		}
 	}
 
 	@Test
@@ -38,11 +38,5 @@ public class LunchAlgorithmTest {
 
 		assertEquals(5, lunchList.get(0).getTables().size());
 	}
-
-	/*
-	 * input list of members and lieutenants output lists
-	 * 
-	 * asssertions:
-	 */
 
 }

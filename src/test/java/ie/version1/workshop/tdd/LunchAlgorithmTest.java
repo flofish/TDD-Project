@@ -75,10 +75,12 @@ public class LunchAlgorithmTest {
 	}
 
 	@Test
-	public void getLunches_hasFiveLeaders() {
+	public void getLunches_hasAsManyTablesAsLeaders() {
 		List<Lunch> lunchList = objectUnderTest.getLunches();
-
-		assertEquals(5, lunchList.get(0).getTables().size());
+		assertFalse(lunchList.isEmpty());
+		for(Lunch lunch:lunchList){
+			assertEquals(leaders.size(), lunch.getTables().size());
+		}
 	}
 
 }

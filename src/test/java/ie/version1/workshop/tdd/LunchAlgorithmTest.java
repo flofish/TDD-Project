@@ -82,5 +82,18 @@ public class LunchAlgorithmTest {
 			assertEquals(leaders.size(), lunch.getTables().size());
 		}
 	}
+	
+	@Test
+	public void getLunches_tableMembersAreNotNull() {
+		List<Lunch> lunchList = objectUnderTest.getLunches();
+		assertFalse(lunchList.isEmpty());
+		for(Lunch lunch:lunchList){
+			Map<Leader, List<Member>> tables = lunch.getTables();
+			assertFalse(tables.values().isEmpty());
+			for(List<Member> members:tables.values()){
+				assertNotNull(members);
+			}
+		}
+	}
 
 }

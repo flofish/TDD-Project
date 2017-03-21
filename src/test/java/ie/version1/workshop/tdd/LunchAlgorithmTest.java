@@ -2,6 +2,7 @@ package ie.version1.workshop.tdd;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,6 +94,24 @@ public class LunchAlgorithmTest {
 			for(List<Member> members:tables.values()){
 				assertNotNull(members);
 			}
+		}
+	}
+	
+	@Test
+	public void getLunches_tableMembersAreEquallyDistributed() {
+		List<Lunch> lunchList = objectUnderTest.getLunches();
+		int expectedTableSizeMin = members.size() / leaders.size();
+		int expectedTableSizeMax = expectedTableSizeMin + (members.size() % leaders.size());
+		assertFalse(lunchList.isEmpty());
+		for(Lunch lunch:lunchList){
+			Map<Leader, List<Member>> tables = lunch.getTables();
+			assertFalse(tables.values().isEmpty());
+			int membersInLunch = 0;
+			for(List<Member> tableMembers:tables.values()){
+				membersInLunch += tableMembers.size();
+				assertTrue(expectedTableSizeMin <= tableMembers.size() && tableMembers.size() <= expectedTableSizeMax);
+			}
+			assertEquals(members.size(), membersInLunch);
 		}
 	}
 

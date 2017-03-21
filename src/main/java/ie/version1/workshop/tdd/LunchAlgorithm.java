@@ -16,12 +16,29 @@ public class LunchAlgorithm {
 	public List<Lunch> getLunches() {
 		List<Lunch> lunchList = new ArrayList<Lunch>();
 		Lunch lunch = new Lunch();
-		for(Leader leader:leaders){
-			List<Member> members = new ArrayList<Member>();
-			lunch.getTables().put(leader, members);
-		}
+		populateTableLeaders(lunch, leaders);
+		populateTableMembers(lunch, members);
 		lunchList.add(lunch);
 		return lunchList;
+	}
+	
+	private void populateTableLeaders(Lunch lunch, List<Leader> lunchLeaders){
+		for(Leader lunchLeader:lunchLeaders){
+			lunch.getTables().put(lunchLeader, new ArrayList<Member>());
+		}
+	}
+	
+	private void populateTableMembers(Lunch lunch, List<Member> lunchMembers){
+		int expectedTableSize = lunchMembers.size() / lunch.getTables().size();
+		for(Member lunchMember:lunchMembers){
+			for(Leader leader:lunch.getTables().keySet()){
+				List<Member> table = lunch.getTables().get(leader);
+				if(table.size() < expectedTableSize){
+					table.add(lunchMember);
+					break;
+				}
+			}
+		}
 	}
 
 }

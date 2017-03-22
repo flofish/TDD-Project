@@ -1,5 +1,5 @@
 package ie.version1.workshop.tdd;
 
-public class Leader {
+public class Leader extends Member {
 
 }

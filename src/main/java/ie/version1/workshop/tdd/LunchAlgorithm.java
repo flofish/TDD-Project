@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public class LunchAlgorithm {
@@ -18,7 +19,7 @@ public class LunchAlgorithm {
 	}
 	
 	public List<Lunch> getLunches() {
-		Map<Leader, Set<Member>> controlMap = newControlMap(leaders);
+		Map<Member, Map<Member, Integer>> controlMap = newControlMap(members);
 		List<Lunch> lunchList = new ArrayList<Lunch>();
 		for(int i=0; i < leaders.size(); i++){
 			Lunch lunch = new Lunch();
@@ -35,29 +36,65 @@ public class LunchAlgorithm {
 		}
 	}
 	
-	private void populateTableMembers(Lunch lunch, List<Member> lunchMembers, Map<Leader, Set<Member>> controlMap){
+	private void populateTableMembers(Lunch lunch, List<Member> lunchMembers, Map<Member, Map<Member, Integer>> controlMap){
+		Set<Member> membersAlreadyInLunch = new HashSet<>();
 		int expectedTableSize = lunchMembers.size() / lunch.getTables().size();
-		for(Leader leader:lunch.getTables().keySet()){
+		for(Entry<Leader,List<Member>> table:lunch.getTables().entrySet()){
 			for(Member lunchMember:lunchMembers){
-				if(!controlMap.get(leader).contains(lunchMember)){
-					List<Member> table = lunch.getTables().get(leader);
-					if(table.size() < expectedTableSize){
-						table.add(lunchMember);
-						controlMap.get(leader).add(lunchMember);
-					} else {
-						break;
+				if(!membersAlreadyInLunch.contains(lunchMember)){
+					if(canSitOnTable(lunchMember, table, controlMap)){
+						sitsOnTable(lunchMember, table, controlMap);
+						membersAlreadyInLunch.add(lunchMember);
 					}
+				}
+				if(table.getValue().size() >= expectedTableSize){
+					break;
 				}
 			}
 		}
 	}
 	
-	private Map<Leader, Set<Member>> newControlMap(List<Leader> lunchLeaders){
-		Map<Leader, Set<Member>> controlMap = new HashMap<>();
-		for(Leader lunchLeader:lunchLeaders){
-			controlMap.put(lunchLeader, new HashSet<Member>());
+	private Map<Member, Map<Member, Integer>> newControlMap(List<Member> lunchMembers){
+		Map<Member, Map<Member, Integer>> controlMap = new HashMap<>();
+		for(Member member:lunchMembers){
+			controlMap.put(member, new HashMap<Member, Integer>());
 		}
 		return controlMap;
+	}
+	
+	private boolean canSitOnTable(Member member, Entry<Leader,List<Member>> table, Map<Member, Map<Member, Integer>> controlMap){
+		
+		// can't have lunch with same leader more than once
+		if(controlMap.get(member).keySet().contains(table.getKey())){
+			return false;
+		}
+		
+		// can't have lunch with same pal more than twice
+		for(Member lunchPal:table.getValue()){
+			if(controlMap.get(member).keySet().contains(lunchPal)
+				&& controlMap.get(member).get(lunchPal) >= 2){
+				return false;
+			}
+			
+		}
+		
+		return true;
+	}
+	
+	private void sitsOnTable(Member member, Entry<Leader,List<Member>> table, Map<Member, Map<Member, Integer>> controlMap){
+		
+		// adds leader to control
+		controlMap.get(member).put(table.getKey(), 1);
+		
+		// adds pals to control
+		for(Member lunchPal:table.getValue()){
+			Integer count = controlMap.get(member).get(lunchPal);
+			controlMap.get(member).put(lunchPal, count == null ? 1 : count + 1);
+		}
+		
+		// adds member to table
+		table.getValue().add(member);
+		
 	}
 
 }

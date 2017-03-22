@@ -114,5 +114,10 @@ public class LunchAlgorithmTest {
 			assertEquals(members.size(), membersInLunch);
 		}
 	}
+	
+	@Test
+	public void getLunches_hasAsManyLunchesAsLeaders() {
+		assertEquals(leaders.size(), objectUnderTest.getLunches().size());
+	}
 
 }

@@ -15,10 +15,12 @@ public class LunchAlgorithm {
 	
 	public List<Lunch> getLunches() {
 		List<Lunch> lunchList = new ArrayList<Lunch>();
-		Lunch lunch = new Lunch();
-		populateTableLeaders(lunch, leaders);
-		populateTableMembers(lunch, members);
-		lunchList.add(lunch);
+		for(int i=0; i < leaders.size(); i++){
+			Lunch lunch = new Lunch();
+			populateTableLeaders(lunch, leaders);
+			populateTableMembers(lunch, members);
+			lunchList.add(lunch);
+		}
 		return lunchList;
 	}
 	

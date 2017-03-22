@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.Before;
@@ -135,6 +136,28 @@ public class LunchAlgorithmTest {
 				for(Member member:lunch.getTables().get(leader)){
 					assertFalse(leaderMemberHadLunch.get(leader).contains(member));
 					leaderMemberHadLunch.get(leader).add(member);
+				}
+			}
+		}
+	}
+	
+	@Test
+	public void getLunches_eachMemberHasLunchWithMemberNoMoreThanTwice() {
+		Map<Member, Map<Member, Integer>> memberMemberHadLunch = new HashMap<>();
+		for(Member member:members){
+			memberMemberHadLunch.put(member, new HashMap<Member, Integer>());
+		}
+		List<Lunch> lunchList = objectUnderTest.getLunches();
+		for(Lunch lunch:lunchList){
+			for(Entry<Leader,List<Member>> table:lunch.getTables().entrySet()){
+				for(Member member:table.getValue()){
+					for(Member lunchPal:table.getValue()){
+						if(!member.equals(lunchPal)){
+							Integer count = memberMemberHadLunch.get(member).get(lunchPal);
+							memberMemberHadLunch.get(member).put(lunchPal, count == null ? 1 : count + 1);
+							assertTrue(memberMemberHadLunch.get(member).get(lunchPal) <= 2);
+						}
+					}
 				}
 			}
 		}

@@ -64,11 +64,6 @@ public class LunchAlgorithm {
 	
 	private boolean canSitOnTable(Member member, Entry<Leader,List<Member>> table, Map<Member, Map<Member, Integer>> controlMap){
 		
-		// can't have lunch with same leader more than once
-		if(controlMap.get(member).keySet().contains(table.getKey())){
-			return false;
-		}
-		
 		// can't have lunch with same pal more than twice
 		for(Member lunchPal:table.getValue()){
 			if(controlMap.get(member).keySet().contains(lunchPal)
@@ -82,9 +77,6 @@ public class LunchAlgorithm {
 	}
 	
 	private void sitsOnTable(Member member, Entry<Leader,List<Member>> table, Map<Member, Map<Member, Integer>> controlMap){
-		
-		// adds leader to control
-		controlMap.get(member).put(table.getKey(), 1);
 		
 		// adds pals to control
 		for(Member lunchPal:table.getValue()){

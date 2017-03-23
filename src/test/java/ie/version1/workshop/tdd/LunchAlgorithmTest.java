@@ -6,11 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -122,23 +120,6 @@ public class LunchAlgorithmTest {
 	@Test
 	public void getLunches_hasAsManyLunchesAsLeaders() {
 		assertEquals(leaders.size(), objectUnderTest.getLunches().size());
-	}
-	
-	@Test
-	public void getLunches_eachMemberHasLunchWithLeaderOnlyOnce() {
-		Map<Leader, Set<Member>> leaderMemberHadLunch = new HashMap<>();
-		for(Leader leader:leaders){
-			leaderMemberHadLunch.put(leader, new HashSet<Member>());
-		}
-		List<Lunch> lunchList = objectUnderTest.getLunches();
-		for(Lunch lunch:lunchList){
-			for(Leader leader:lunch.getTables().keySet()){
-				for(Member member:lunch.getTables().get(leader)){
-					assertFalse(leaderMemberHadLunch.get(leader).contains(member));
-					leaderMemberHadLunch.get(leader).add(member);
-				}
-			}
-		}
 	}
 	
 	@Test

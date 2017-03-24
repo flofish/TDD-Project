@@ -12,10 +12,12 @@ public class LunchAlgorithm {
 
 	private final List<Leader> leaders;
 	private final List<Member> members;
+	private final int treshold;
 	
-	public LunchAlgorithm(List<Leader> leaders, List<Member> members){
+	public LunchAlgorithm(List<Leader> leaders, List<Member> members, int treshold){
 		this.leaders = Collections.unmodifiableList(leaders);
 		this.members = Collections.unmodifiableList(members);
+		this.treshold = treshold;
 	}
 	
 	public List<Lunch> getLunches() {

@@ -2,7 +2,6 @@ package ie.version1.workshop.tdd;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,25 +16,21 @@ public class LunchAlgorithmTest {
 
 	private List<Leader> leaders;
 	private List<Member> members;
+	private int treshold;
 	private LunchAlgorithm objectUnderTest;
 
 	@Before
 	public void setup() {
 		leaders = new ArrayList<>();
-		leaders.add(new Leader());
-		leaders.add(new Leader());
-		leaders.add(new Leader());
-		leaders.add(new Leader());
+		for(int i = 0; i < 5; i++){
+			leaders.add(new Leader());
+		}
 		members = new ArrayList<>();
-		members.add(new Member());
-		members.add(new Member());
-		members.add(new Member());
-		members.add(new Member());
-		members.add(new Member());
-		members.add(new Member());
-		members.add(new Member());
-		members.add(new Member());
-		objectUnderTest = new LunchAlgorithm(leaders, members);
+		for(int i = 0; i < 35; i++){
+			members.add(new Member());
+		}
+		treshold = 7;
+		objectUnderTest = new LunchAlgorithm(leaders, members, treshold);
 	}
 	
 	@Test
@@ -102,8 +97,7 @@ public class LunchAlgorithmTest {
 	@Test
 	public void getLunches_tableMembersAreEquallyDistributed() {
 		List<Lunch> lunchList = objectUnderTest.getLunches();
-		int expectedTableSizeMin = members.size() / leaders.size();
-		int expectedTableSizeMax = expectedTableSizeMin + (members.size() % leaders.size());
+		int expectedTableSize = members.size() / leaders.size() + 1;
 		assertFalse(lunchList.isEmpty());
 		for(Lunch lunch:lunchList){
 			Map<Leader, List<Member>> tables = lunch.getTables();
@@ -111,9 +105,9 @@ public class LunchAlgorithmTest {
 			int membersInLunch = 0;
 			for(List<Member> tableMembers:tables.values()){
 				membersInLunch += tableMembers.size();
-				assertTrue(expectedTableSizeMin <= tableMembers.size() && tableMembers.size() <= expectedTableSizeMax);
+				assertEquals(expectedTableSize, tableMembers.size());
 			}
-			assertEquals(members.size(), membersInLunch);
+			assertEquals(members.size() + leaders.size(), membersInLunch);
 		}
 	}
 	
@@ -123,22 +117,32 @@ public class LunchAlgorithmTest {
 	}
 	
 	@Test
-	public void getLunches_eachMemberHasLunchWithMemberNoMoreThanTwice() {
-		Map<Member, Map<Member, Integer>> memberMemberHadLunch = new HashMap<>();
+	public void getLunches_eachMemberHasLunchWithTwoPreviousPalsMax() {
+		Map<Member, Map<Member, Integer>> controlMap = new HashMap<>();
+		for(Leader leader:leaders){
+			controlMap.put(leader, new HashMap<Member, Integer>());
+		}
 		for(Member member:members){
-			memberMemberHadLunch.put(member, new HashMap<Member, Integer>());
+			controlMap.put(member, new HashMap<Member, Integer>());
 		}
 		List<Lunch> lunchList = objectUnderTest.getLunches();
 		for(Lunch lunch:lunchList){
 			for(Entry<Leader,List<Member>> table:lunch.getTables().entrySet()){
 				for(Member member:table.getValue()){
+					int countPreviousPals = 0;
+					List<Member> previousPals = new ArrayList<>();
 					for(Member lunchPal:table.getValue()){
 						if(!member.equals(lunchPal)){
-							Integer count = memberMemberHadLunch.get(member).get(lunchPal);
-							memberMemberHadLunch.get(member).put(lunchPal, count == null ? 1 : count + 1);
-							assertTrue(memberMemberHadLunch.get(member).get(lunchPal) <= 2);
+							int count = controlMap.get(member).get(lunchPal) == null ? 
+									0 : controlMap.get(member).get(lunchPal);
+							if(count > 0){
+								countPreviousPals++;
+								previousPals.add(lunchPal);
+							}
+							controlMap.get(member).put(lunchPal, count + 1);
 						}
 					}
+					assertFalse(countPreviousPals > treshold);
 				}
 			}
 		}

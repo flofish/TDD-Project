@@ -29,7 +29,7 @@ public class LunchAlgorithmTest {
 		for(int i = 0; i < 35; i++){
 			members.add(new Member());
 		}
-		treshold = 7;
+		treshold = 2;
 		objectUnderTest = new LunchAlgorithm(leaders, members, treshold);
 	}
 	

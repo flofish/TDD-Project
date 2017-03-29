@@ -1,69 +1,108 @@
 package ie.version1.workshop.tdd;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 public class LunchAlgorithm {
 
 	private final List<Leader> leaders;
 	private final List<Member> members;
 	private final int treshold;
+	private final int tableSize;
+	private final List<List<Member>> possibleTables;
+	
+	private static final Logger log = Logger.getLogger(LunchAlgorithm.class);
 	
 	public LunchAlgorithm(List<Leader> leaders, List<Member> members, int treshold){
+		log.debug("Initializing lunch algorithm..");
 		this.leaders = Collections.unmodifiableList(leaders);
 		this.members = Collections.unmodifiableList(members);
 		this.treshold = treshold;
+		this.tableSize = members.size() / leaders.size();
+		this.possibleTables = getPossibleTables(members, tableSize);
+		log.debug(String.format("Finished initializing lunch algorithm. %s possible tables.", possibleTables.size()));
 	}
 	
 	public List<Lunch> getLunches() {
+		log.debug("Getting lunches..");
+		List<Lunch> lunchList = new ArrayList<Lunch>();	
 		Map<Member, Map<Member, Integer>> controlMap = newControlMap(leaders, members);
-		List<Lunch> lunchList = new ArrayList<Lunch>();
 		for(int i=0; i < leaders.size(); i++){
-			Lunch lunch = new Lunch();
-			populateTableLeaders(lunch, leaders);
-			populateTableMembers(lunch, members, treshold, controlMap);
+			Lunch lunch = getLunch(controlMap, possibleTables, leaders, members, treshold);
 			lunchList.add(lunch);
+			updateControlMap(controlMap, lunch);
+		}
+		if(log.isDebugEnabled()){
+			StringBuilder sb = new  StringBuilder();
+			sb.append("{\"lunchlist\":[");
+			for(Lunch lunch:lunchList){
+				sb.append(lunch);
+			}
+			sb.append("]}");
+			log.debug(sb.toString());
 		}
 		return lunchList;
 	}
 	
-	private void populateTableLeaders(Lunch lunch, List<Leader> lunchLeaders){
+	private Lunch getLunch(Map<Member, Map<Member, Integer>> controlMap, List<List<Member>> possibleTables, List<Leader> lunchLeaders, List<Member> lunchMembers, int treshold){
+		log.debug("Getting lunch..");
+		Lunch lunch = new Lunch();
+		List<Member> membersAlreadyInLunch = new ArrayList<>();
 		for(Leader lunchLeader:lunchLeaders){
-			List<Member> table = new ArrayList<>();
-			table.add(lunchLeader);
-			lunch.getTables().put(lunchLeader, table);
-		}
-	}
-	
-	private void populateTableMembers(Lunch lunch, List<Member> lunchMembers, int treshold, Map<Member, Map<Member, Integer>> controlMap){
-		Set<Member> membersAlreadyInLunch = new HashSet<>();
-		int expectedTableSize = lunchMembers.size() / lunch.getTables().size() + 1;
-		for(Entry<Leader,List<Member>> table:lunch.getTables().entrySet()){
-			while(table.getValue().size() < expectedTableSize){
-				int eligibility = -1;
-				Member eligibleMember = null;
-				for(Member lunchMember:lunchMembers){
-					if(!membersAlreadyInLunch.contains(lunchMember)){
-						int newEligibility = calculateEligibility(lunchMember, table, treshold, controlMap);
-						if(newEligibility > eligibility){
-							eligibility = newEligibility;
-							eligibleMember = lunchMember;
-						}
-					}
-				}
-				if(eligibleMember != null){
-					sitsOnTable(eligibleMember, table, controlMap);
-					membersAlreadyInLunch.add(eligibleMember);
-				} else {
-					throw new IllegalStateException("No more eligible members left.");
+			for(List<Member> possibleTable:possibleTables){
+				if(test(controlMap, membersAlreadyInLunch, lunch, lunchLeader, possibleTable, possibleTable.size(), treshold)){
+					log.debug("Found valid table.");
+					membersAlreadyInLunch.addAll(possibleTable);
+					List<Member> table = new ArrayList<>(possibleTable);
+					table.add(lunchLeader);
+					lunch.getTables().put(lunchLeader, table);
+					break;
 				}
 			}
 		}
+		log.debug(String.format("Finished getting lunch"));
+		return lunch;
+	}
+	
+	private boolean test(Map<Member, Map<Member, Integer>> controlMap, List<Member> membersAlreadyInLunch, Lunch lunch, Leader lunchLeader, List<Member> tableMembers, int tableSize, int treshold){
+		// checks that table size is correct
+		if(tableMembers.size() != tableSize){
+			
+			return false;
+		}
+		// checks that members are not in lunch already
+		for(Member tableMember:tableMembers){
+			if(membersAlreadyInLunch.contains(tableMember)){
+				return false;
+			}
+		}
+		// builds temp control map to test treshold
+		Map<Member, Map<Member, Integer>> tmpControlMap = copyControlMap(controlMap);
+		Lunch tmpLunch = new Lunch(lunch);
+		List<Member> tmpTable = new ArrayList<>(tableMembers);
+		tmpTable.add(lunchLeader);
+		tmpLunch.getTables().put(lunchLeader, tmpTable);
+		updateControlMap(tmpControlMap, tmpLunch);
+		return testTreshold(tmpControlMap, treshold);
+	}
+	
+	private boolean testTreshold(Map<Member, Map<Member, Integer>> controlMap, int treshold){
+		// checks that members are not having lunch with more that <treshold> previous pals
+		for(Map<Member, Integer> pals:controlMap.values()){
+			for(Integer palCount:pals.values()){
+				if(palCount > treshold){
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	private Map<Member, Map<Member, Integer>> newControlMap(List<Leader> lunchLeaders, List<Member> lunchMembers){
@@ -76,56 +115,48 @@ public class LunchAlgorithm {
 		}
 		return controlMap;
 	}
-
-	private int calculateEligibility(Member member, Entry<Leader,List<Member>> table, int treshold, Map<Member, Map<Member, Integer>> controlMap){
-		
-		int eligibility = Integer.MAX_VALUE;
-		
-		List<Member> previousPals = getPreviousPals(member, table, 0, controlMap);
-		
-		// can't have lunch with more that x previous pals
-		if(previousPals.size() > treshold){
-			return -1;
+	
+	private Map<Member, Map<Member, Integer>> copyControlMap(Map<Member, Map<Member, Integer>> originalControlMap){
+		Map<Member, Map<Member, Integer>> controlMap = new HashMap<>();
+		for(Entry<Member, Map<Member, Integer>> originalEntry:originalControlMap.entrySet()){
+			controlMap.put(originalEntry.getKey(), new HashMap<>(originalEntry.getValue()));
 		}
-		
-		for(Member previousPal:previousPals){
-			// checks that if seated, previous pals won't exceed the x previous pals rule
-			if(getPreviousPals(previousPal, table, 1, controlMap).size() > (treshold - 1)){
-				return -1;
-			}
-		}
-		
-		return eligibility;
+		return controlMap;
 	}
 	
-	private List<Member> getPreviousPals(Member member, Entry<Leader, List<Member>> table, int treshold, Map<Member, Map<Member, Integer>> controlMap){
-		List<Member> previousPals = new ArrayList<>();
-		for(Member pal:table.getValue()){
-			if(controlMap.get(member).get(pal) != null
-					&& controlMap.get(member).get(pal) > treshold){	
-				previousPals.add(pal);
+	private void updateControlMap(Map<Member, Map<Member, Integer>> controlMap, Lunch lunch){
+		for(Entry<Leader,List<Member>> table:lunch.getTables().entrySet()){
+			for(Member member:table.getValue()){
+				for(Member lunchPal:table.getValue()){
+					if(!member.equals(lunchPal)){
+						int count = controlMap.get(member).get(lunchPal) == null ? 
+								0 : controlMap.get(member).get(lunchPal);
+						controlMap.get(member).put(lunchPal, count + 1);
+					}
+				}
 			}
 		}
-		return previousPals;
 	}
 	
-	private void sitsOnTable(Member member, Entry<Leader,List<Member>> table, Map<Member, Map<Member, Integer>> controlMap){
-		
-		// adds pals to control
-		for(Member lunchPal:table.getValue()){
-			if(!lunchPal.equals(member)){
-				// adds 1 to member count
-				Integer count = controlMap.get(member).get(lunchPal);
-				controlMap.get(member).put(lunchPal, count == null ? 1 : count + 1);
-				// adds 1 to pal count
-				count = controlMap.get(lunchPal).get(member);
-				controlMap.get(lunchPal).put(member, count == null ? 1 : count + 1);
-			}
-		}
-		
-		// adds member to table
-		table.getValue().add(member);
-		
+	private List<List<Member>> getPossibleTables(List<Member> lunchMembers, int tableSize){
+	    if (0 == tableSize) {
+	        return Collections.singletonList(Collections.<Member>emptyList());
+	    }
+	    if (lunchMembers.isEmpty()) {
+	        return Collections.emptyList();
+	    }
+	    List<List<Member>> possibleTables = new LinkedList<>();
+	    Member member = lunchMembers.iterator().next();
+	    List<Member> restOfTheMembers = new LinkedList<Member>(lunchMembers);
+	    restOfTheMembers.remove(member);
+	    List<List<Member>> possibleCombinations = getPossibleTables(restOfTheMembers, tableSize - 1);
+	    for (List<Member> possibleCombination : possibleCombinations) {
+	        List<Member> possibleTable = new LinkedList<Member>(possibleCombination);
+	        possibleTable.add(0, member);
+	        possibleTables.add(possibleTable);
+	    }
+	    possibleTables.addAll(getPossibleTables(restOfTheMembers, tableSize));
+	    return possibleTables;
 	}
 
 }

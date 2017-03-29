@@ -9,18 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class LunchAlgorithmTest {
 
-	private List<Leader> leaders;
-	private List<Member> members;
-	private int treshold;
-	private LunchAlgorithm objectUnderTest;
+	private static List<Leader> leaders;
+	private static List<Member> members;
+	private static int treshold;
+	private static LunchAlgorithm objectUnderTest;
+	private static List<Lunch> lunches;
 
-	@Before
-	public void setup() {
+	@BeforeClass
+	public static void setup() {
 		leaders = new ArrayList<>();
 		for(int i = 0; i < 5; i++){
 			leaders.add(new Leader());
@@ -31,23 +32,22 @@ public class LunchAlgorithmTest {
 		}
 		treshold = 2;
 		objectUnderTest = new LunchAlgorithm(leaders, members, treshold);
+		lunches = objectUnderTest.getLunches();
 	}
 	
 	@Test
 	public void getLunches_listNotNull() {
-
-		assertNotNull(objectUnderTest.getLunches());
+		assertNotNull(lunches);
 	}
 
 	@Test
 	public void getLunches_listNotEmpty() {
-
-		assertFalse(objectUnderTest.getLunches().isEmpty());
+		assertFalse(lunches.isEmpty());
 	}
 
 	@Test
 	public void getLunches_lunchNotNull() {
-		List<Lunch> lunchList = objectUnderTest.getLunches();
+		List<Lunch> lunchList = lunches;
 		assertFalse(lunchList.isEmpty());
 		for(Lunch lunch:lunchList){
 			assertNotNull(lunch);
@@ -56,7 +56,7 @@ public class LunchAlgorithmTest {
 	
 	@Test
 	public void getLunches_tableNotNull() {
-		List<Lunch> lunchList = objectUnderTest.getLunches();
+		List<Lunch> lunchList = lunches;
 		assertFalse(lunchList.isEmpty());
 		for(Lunch lunch:lunchList){
 			assertNotNull(lunch.getTables());
@@ -65,7 +65,7 @@ public class LunchAlgorithmTest {
 	
 	@Test
 	public void getLunches_tableNotEmpty() {
-		List<Lunch> lunchList = objectUnderTest.getLunches();
+		List<Lunch> lunchList = lunches;
 		assertFalse(lunchList.isEmpty());
 		for(Lunch lunch:lunchList){
 			assertFalse(lunch.getTables().isEmpty());
@@ -74,7 +74,7 @@ public class LunchAlgorithmTest {
 
 	@Test
 	public void getLunches_hasAsManyTablesAsLeaders() {
-		List<Lunch> lunchList = objectUnderTest.getLunches();
+		List<Lunch> lunchList = lunches;
 		assertFalse(lunchList.isEmpty());
 		for(Lunch lunch:lunchList){
 			assertEquals(leaders.size(), lunch.getTables().size());
@@ -83,7 +83,7 @@ public class LunchAlgorithmTest {
 	
 	@Test
 	public void getLunches_tableMembersAreNotNull() {
-		List<Lunch> lunchList = objectUnderTest.getLunches();
+		List<Lunch> lunchList = lunches;
 		assertFalse(lunchList.isEmpty());
 		for(Lunch lunch:lunchList){
 			Map<Leader, List<Member>> tables = lunch.getTables();
@@ -96,7 +96,7 @@ public class LunchAlgorithmTest {
 	
 	@Test
 	public void getLunches_tableMembersAreEquallyDistributed() {
-		List<Lunch> lunchList = objectUnderTest.getLunches();
+		List<Lunch> lunchList = lunches;
 		int expectedTableSize = members.size() / leaders.size() + 1;
 		assertFalse(lunchList.isEmpty());
 		for(Lunch lunch:lunchList){
@@ -113,7 +113,7 @@ public class LunchAlgorithmTest {
 	
 	@Test
 	public void getLunches_hasAsManyLunchesAsLeaders() {
-		assertEquals(leaders.size(), objectUnderTest.getLunches().size());
+		assertEquals(leaders.size(), lunches.size());
 	}
 	
 	@Test
@@ -125,7 +125,7 @@ public class LunchAlgorithmTest {
 		for(Member member:members){
 			controlMap.put(member, new HashMap<Member, Integer>());
 		}
-		List<Lunch> lunchList = objectUnderTest.getLunches();
+		List<Lunch> lunchList = lunches;
 		for(Lunch lunch:lunchList){
 			for(Entry<Leader,List<Member>> table:lunch.getTables().entrySet()){
 				for(Member member:table.getValue()){

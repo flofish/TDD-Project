@@ -3,16 +3,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 public class LunchAlgorithm {
 
 	private final List<Leader> leaders;
 	private final List<Member> members;
 	private final int treshold;
+	
+	private static final Logger log = Logger.getLogger(LunchAlgorithm.class);
 	
 	public LunchAlgorithm(List<Leader> leaders, List<Member> members, int treshold){
 		this.leaders = Collections.unmodifiableList(leaders);
@@ -21,6 +26,7 @@ public class LunchAlgorithm {
 	}
 	
 	public List<Lunch> getLunches() {
+		log.debug("Getting lunches..");
 		Map<Member, Map<Member, Integer>> controlMap = newControlMap(leaders, members);
 		List<Lunch> lunchList = new ArrayList<Lunch>();
 		for(int i=0; i < leaders.size(); i++){
@@ -28,6 +34,19 @@ public class LunchAlgorithm {
 			populateTableLeaders(lunch, leaders);
 			populateTableMembers(lunch, members, treshold, controlMap);
 			lunchList.add(lunch);
+		}
+		if(log.isDebugEnabled()){
+			StringBuilder sb = new  StringBuilder();
+			sb.append("{\"lunchlist\":[");
+			Iterator<Lunch> lunchesIterator = lunchList.iterator();
+            while(lunchesIterator.hasNext()){
+				sb.append(lunchesIterator.next());
+				 if (lunchesIterator.hasNext()) {
+	                sb.append(',');
+	            }
+			}
+			sb.append("]}");
+			log.debug(sb.toString());
 		}
 		return lunchList;
 	}
@@ -60,7 +79,8 @@ public class LunchAlgorithm {
 					sitsOnTable(eligibleMember, table, controlMap);
 					membersAlreadyInLunch.add(eligibleMember);
 				} else {
-					throw new IllegalStateException("No more eligible members left.");
+					log.warn("No more eligible members left.");
+					break;
 				}
 			}
 		}

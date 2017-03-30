@@ -1,5 +1,4 @@
 package ie.version1.workshop.tdd;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -9,15 +8,6 @@ import java.util.Map.Entry;
 public class Lunch {
 
 	private final Map<Leader, List<Member>> tables = new HashMap<>();
-
-	public Lunch(){
-	}
-	
-	public Lunch(Lunch lunch){
-		for(Entry<Leader, List<Member>> table:lunch.getTables().entrySet()){
-			tables.put(table.getKey(), new ArrayList<Member>(table.getValue()));
-		}
-	}
 	
 	public Map<Leader, List<Member>> getTables() {
 		return tables;

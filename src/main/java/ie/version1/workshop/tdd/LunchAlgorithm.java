@@ -22,7 +22,7 @@ public class LunchAlgorithm {
 	private static final Logger log = Logger.getLogger(LunchAlgorithm.class);
 	
 	public LunchAlgorithm(List<Leader> leaders, List<Member> members, int treshold){
-		log.debug("Initializing lunch algorithm..");
+		log.debug(String.format("Initializing lunch algorithm with %s leaders and %s members..", leaders.size(), members.size()));
 		this.leaders = Collections.unmodifiableList(leaders);
 		this.members = Collections.unmodifiableList(members);
 		this.treshold = treshold;
@@ -78,8 +78,7 @@ public class LunchAlgorithm {
 	
 	private boolean test(Map<Member, Map<Member, Integer>> controlMap, List<Member> membersAlreadyInLunch, Lunch lunch, Leader lunchLeader, List<Member> tableMembers, int tableSize, int treshold){
 		// checks that table size is correct
-		if(tableMembers.size() != tableSize){
-			
+		if(tableMembers.size() != tableSize){		
 			return false;
 		}
 		// checks that members are not in lunch already
@@ -88,24 +87,26 @@ public class LunchAlgorithm {
 				return false;
 			}
 		}
-		// builds temp control map to test treshold
-		Map<Member, Map<Member, Integer>> tmpControlMap = copyControlMap(controlMap);
-		Lunch tmpLunch = new Lunch(lunch);
-		List<Member> tmpTable = new ArrayList<>(tableMembers);
-		tmpTable.add(lunchLeader);
-		tmpLunch.getTables().put(lunchLeader, tmpTable);
-		updateControlMap(tmpControlMap, tmpLunch);
-		return testTreshold(tmpControlMap, treshold);
+		// builds table to test treshold
+		List<Member> tableUnderTest = new ArrayList<>(tableMembers);
+		tableUnderTest.add(lunchLeader);
+		return testTreshold(tableUnderTest, controlMap, treshold);
 	}
 	
-	private boolean testTreshold(Map<Member, Map<Member, Integer>> controlMap, int treshold){
+	private boolean testTreshold(List<Member> tableMembers, Map<Member, Map<Member, Integer>> controlMap, int treshold){
 		// checks that members are not having lunch with more that <treshold> previous pals
-		for(Map<Member, Integer> pals:controlMap.values()){
-			for(Integer palCount:pals.values()){
-				if(palCount > treshold){
-					return false;
-				}
-			}
+		for(Member member:tableMembers){
+			 Map<Member, Integer> memberPreviousPals = controlMap.get(member);
+			 int previousPalsCount = 0;
+			 for(Member pal:tableMembers){
+				 Integer palCount = memberPreviousPals.get(pal);
+				 if(palCount != null && palCount > 0){
+					 previousPalsCount++;
+					 if(previousPalsCount > treshold){
+						 return false;
+					 }
+				 }
+			 }
 		}
 		return true;
 	}
@@ -117,14 +118,6 @@ public class LunchAlgorithm {
 		}
 		for(Member member:lunchMembers){
 			controlMap.put(member, new HashMap<Member, Integer>());
-		}
-		return controlMap;
-	}
-	
-	private Map<Member, Map<Member, Integer>> copyControlMap(Map<Member, Map<Member, Integer>> originalControlMap){
-		Map<Member, Map<Member, Integer>> controlMap = new HashMap<>();
-		for(Entry<Member, Map<Member, Integer>> originalEntry:originalControlMap.entrySet()){
-			controlMap.put(originalEntry.getKey(), new HashMap<>(originalEntry.getValue()));
 		}
 		return controlMap;
 	}

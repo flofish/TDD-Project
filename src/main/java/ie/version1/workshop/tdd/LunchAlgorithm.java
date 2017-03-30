@@ -3,6 +3,7 @@ package ie.version1.workshop.tdd;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +43,12 @@ public class LunchAlgorithm {
 		if(log.isDebugEnabled()){
 			StringBuilder sb = new  StringBuilder();
 			sb.append("{\"lunchlist\":[");
-			for(Lunch lunch:lunchList){
-				sb.append(lunch);
+			Iterator<Lunch> lunchesIterator = lunchList.iterator();
+            while(lunchesIterator.hasNext()){
+				sb.append(lunchesIterator.next());
+				 if (lunchesIterator.hasNext()) {
+	                sb.append(',');
+	            }
 			}
 			sb.append("]}");
 			log.debug(sb.toString());
